@@ -8,3 +8,4 @@ ipykernel
 streamlit
 pytest
 python-dotenv
+kagglehub
