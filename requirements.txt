@@ -9,3 +9,4 @@ streamlit
 pytest
 python-dotenv
 kagglehub
+pyarrow
