@@ -49,19 +49,36 @@ def compute_rfm_features(purchases: pd.DataFrame, reference_date: pd.Timestamp) 
 
 
 def compute_trend_features(
-    purchases: pd.DataFrame, reference_date: pd.Timestamp, window_days: int = 90
+    purchases: pd.DataFrame,
+    reference_date: pd.Timestamp,
+    window_days: int = 90,
+    leakage_gap_days: int = CHURN_WINDOW_DAYS,
 ) -> pd.DataFrame:
     """
-    Compares recent activity (last `window_days`) to the prior period of the
-    same length, to capture momentum rather than just static RFM snapshots.
+    Compares activity in two historical windows to capture momentum, while
+    avoiding label leakage.
+
+    IMPORTANT: both windows start *after* `leakage_gap_days` (the churn
+    threshold), i.e. we deliberately skip the most recent `leakage_gap_days`
+    of activity entirely. Without this gap, a "recent activity" feature
+    (e.g. orders in the last 90 days) is almost perfectly correlated with
+    the churn label itself (recency_days <= churn_window), since any
+    purchase inside that recent window guarantees a low recency_days value.
+    That would let the model trivially reconstruct the label instead of
+    learning genuine behavioral signal, and is why an earlier version of
+    this function caused unrealistically high (~97%) accuracy.
+
+    - "recent" window: [leakage_gap_days, leakage_gap_days + window_days) days back
+    - "prior" window:  [leakage_gap_days + window_days, leakage_gap_days + 2*window_days) days back
     """
     df = purchases.copy()
     df["line_total"] = df["Quantity"] * df["Price"]
 
-    recent_start = reference_date - pd.Timedelta(days=window_days)
-    prior_start = reference_date - pd.Timedelta(days=2 * window_days)
+    recent_start = reference_date - pd.Timedelta(days=leakage_gap_days + window_days)
+    recent_end = reference_date - pd.Timedelta(days=leakage_gap_days)
+    prior_start = reference_date - pd.Timedelta(days=leakage_gap_days + 2 * window_days)
 
-    recent = df[df["InvoiceDate"] > recent_start]
+    recent = df[(df["InvoiceDate"] > recent_start) & (df["InvoiceDate"] <= recent_end)]
     prior = df[(df["InvoiceDate"] > prior_start) & (df["InvoiceDate"] <= recent_start)]
 
     def agg_period(data: pd.DataFrame, suffix: str) -> pd.DataFrame:
