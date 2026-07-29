@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 INTERIM_DATA_DIR = PROJECT_ROOT / "data" / "interim"
 PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
+MODELS_DIR = PROJECT_ROOT / "models"
 
 # --- Churn definition ---
 # 75 days sits between the 75th (61 days) and 80th (76 days) percentile of
