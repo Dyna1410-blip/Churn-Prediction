@@ -5,6 +5,7 @@ data/processed/*
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep
+!data/processed/customer_predictions.parquet
 
 # python
 __pycache__/
@@ -15,6 +16,7 @@ venv/
 
 # models
 models/*.pkl
+!models/churn_model.pkl
 
 # env
 .env
