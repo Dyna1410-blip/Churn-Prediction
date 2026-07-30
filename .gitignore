@@ -20,3 +20,6 @@ models/*.pkl
 
 # env
 .env
+
+#personal report
+project_journal.md
